@@ -1,0 +1,285 @@
+﻿@*This is a SWD page object recorder customized template which helps SWD POR to generate*@
+@*java page class compatible with the automation framework. This template helps*@
+@*to generate page class in the format which the automation framework can*@
+@*understand and have references to the other classes which is require*@
+@*for generating logs, using generic constants, using generic class methods etc.*@
+@*The generated page class consists of selected LOCATORS during recording. It follows*@
+@*PAGE FACTORY PATTERN.*@
+
+@*DISCLAIMER: SWD PAGE OBJECT RECORDER WILL WORK WITH STANDARD HTML CONTROLS AND*@
+@*THIS POR WON'T SUPPORT HTML5 CONTROLS LIKS SVG, CANVAS, MAPS ETC.*@
+
+
+@*During Page class Recording user needs to add suffix like TextField, Button,*@
+@*Label, Radio, Checkbox, Link etc to help recorder understand what kind of*@
+@*web control it is.*@
+@*Example - For TextField, TextArea, EditField etc locator name should be "ElementName_TextField" or "ElementNameTextField"*@
+@*For web element "button" it should be named as "ElementName_Button" or "ElementNameButton"*@
+@*For web element "checkbox" it should be named as "ElementName_Checkbox" or "ElementNameCheckbox"*@
+@*For web element "radio button" it should be named as "ElementName_RadioButton" or "ElementNameRadioButton"*@
+@*For web element "label" it should be named as "ElementName_Lable" or "ElementNameLabel"*@
+@*For web element "link" it should be named as "ElementName_Link" or "ElementNameLink"*@
+@*For web element "DropdownList" it should be named as "ElementName_Select" or "ElementNameSelect"*@
+@*For web element "MultiSelect" it should be named as "ElementName_MultiSelect" or "ElementNameMultiSelect"*@
+
+
+@using SwdPageRecorder.UI;
+@using SwdPageRecorder.UI.CodeGeneration
+
+@functions
+{		
+	
+    string JavaHow(string howFromCSharp)
+    {
+        switch (howFromCSharp)
+        {
+            case "Id": return "ID";
+            case "Name": return "NAME";
+            case "TagName": return "TAG_NAME";
+            case "ClassName": return "CLASS_NAME";
+            case "CssSelector": return "CSS";
+            case "LinkText": return "LINK_TEXT";
+            case "PartialLinkText": return "PARTIAL_LINK_TEXT";
+            case "XPath": return "XPATH";
+            default: return "LOCATOR PARSE ERROR";
+        }
+    }
+
+    string QuoteLocator(string locator)
+    {
+        locator = locator.Replace("\"", "\\\"");
+        return locator;
+    }
+		
+	string FirstLetterUppercase(string str)
+	{
+		return char.ToUpper(str[0]) + str.Substring(1);
+	}
+}
+
+@*Package decleartion to be added for generated Java Page class.*@
+
+package com.test.AUT.pages;
+
+import java.util.List;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.How;
+import com.htap.fw_core.FW_Const;
+import com.htap.fw_core.FW_WebDriverFunctions;
+
+public class @Raw(@Model.PageObject.PageObjectName)
+{	
+	private static Logger logger = LogManager.getLogger(@Raw(@Model.PageObject.PageObjectName)@Raw(".class.getName());")
+	FW_WebDriverFunctions fw_WebDriverFunctions = new FW_WebDriverFunctions();
+	
+	
+@*Method for generating locators.*@
+@*Example - private static final String LOCATOR_DIRECTIONSBUTTON="//button[@id='searchbox-directions']";*@
+
+	
+	@foreach (var element in @Model.PageObject.Items )
+	{
+	var fieldName = @element.Name.ToUpper();
+	fieldName = "private static final String LOCATOR_"+fieldName;
+	<text>
+	@fieldName="@Raw(@QuoteLocator(@element.Locator))";
+	</text>
+	}
+	
+@*Method for mapping locators with page factory pattern.*@
+@*@FindBy(how=How.XPATH, using=LOCATOR_DIRECTIONSBUTTON)*@
+@*private WebElement directionsButton;*@
+
+	
+	@foreach (var element in @Model.PageObject.Items) 
+    {
+	if(element.ReturnsCollection) 
+	{        
+	<text>
+	@@FindBy(how=How.@Raw(@JavaHow(@element.How)), using=LOCATOR_@element.Name.ToUpper())
+	private List<WebElement> @Raw(@element.Name);
+	</text>
+	}
+	else 
+	{
+	var fieldName = @element.Name;
+	<text>
+	@@FindBy(how=How.@Raw(@JavaHow(@element.How)), using=LOCATOR_@element.Name.ToUpper())
+	private WebElement @Raw(@fieldName);
+	</text>
+	}
+	}
+	
+@*Method for generating intraction functions based on web elements captured. Methods will be*@
+@*generated based on type of web element.*@
+
+	
+	@foreach (var element in @Model.PageObject.Items )
+	{
+	var fieldName = element.Name;
+	if(fieldName.Contains("TextField"))
+	{
+	var method = "enter"+@FirstLetterUppercase(fieldName)+"(String textToBeEntered)";
+	var methodName = "enter"+@FirstLetterUppercase(fieldName);			
+	var clear = @fieldName+".clear()";
+	var sendKeys = @fieldName+".sendKeys(textToBeEntered)";
+	<text>
+	public void @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Entering '" + textToBeEntered + "' in @FirstLetterUppercase(fieldName)");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(fieldName)", FW_Const.SIXTY);
+		@clear;
+		@sendKeys;
+	}
+	</text>
+
+	method = "get"+@FirstLetterUppercase(fieldName)+"()";
+	methodName = "get"+@FirstLetterUppercase(fieldName);
+	var getText = @fieldName+".getText()";
+	
+	<text>
+	public String @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Getting text from @FirstLetterUppercase(fieldName)");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(fieldName)", FW_Const.SIXTY);
+		return @getText;
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Checkbox"))
+	{
+	var method = "set"+@FirstLetterUppercase(fieldName)+"(FW_Enums.truefalse checkBoxState)";
+	var methodName = "set"+@FirstLetterUppercase(fieldName);
+	var isSelected = @fieldName+".isSelected()";
+	var click = @fieldName+".click()";
+	<text>
+	public void @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Setting @element.Name Checkbox to " + checkBoxState.toString());
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Checkbox", FW_Const.SIXTY);
+			Boolean isChecked = @isSelected;
+			switch (checkBoxState) {
+			case TRUE:
+				if (!isChecked) {
+					@click;
+				}
+				break;
+			case FALSE:
+				if (isChecked) {
+					@click;
+				}
+				break;
+		}
+	}
+	</text>
+	}
+	else if(fieldName.Contains("RadioButton"))
+	{
+	var method = "select"+@FirstLetterUppercase(fieldName)+"()";
+	var methodName = "select"+@FirstLetterUppercase(fieldName);
+	var click = @fieldName+".click()";
+	<text>
+	public void @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Selecting '@element.Name' Radio button option");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Radio", FW_Const.SIXTY);
+		@click;
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Button"))
+	{
+	var method = "click"+@FirstLetterUppercase(fieldName)+"()";
+	var methodName = "click"+@FirstLetterUppercase(fieldName);
+	var click = @fieldName+".click()";
+	<text>
+	public void @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Clicking '@element.Name' button");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Button", FW_Const.SIXTY);
+		@click;
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Link"))
+	{
+	var method = "click"+@FirstLetterUppercase(fieldName)+"()";
+	var methodName = "click"+@FirstLetterUppercase(fieldName);
+	var click = @fieldName+".click()";
+	<text>
+	public void @method{
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Clicking '@element.Name' Link");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Link", FW_Const.SIXTY);
+		@click;
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Select") && !fieldName.Contains("Multi"))
+	{
+	var method = "select"+@FirstLetterUppercase(fieldName)+"(String itemToBeSelcted)";
+	var methodName = "select"+@FirstLetterUppercase(fieldName);
+	var selectByValue = @fieldName+".selectByValue(itemToBeSelcted)";
+	<text>
+	public void @method {
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Selecting '" + itemToBeSelcted + "' from @element.Name Dropdown List");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Dropdown List", FW_Const.SIXTY);
+		Select dropdownList = new Select(@fieldName);
+		dropdownList.selectByValue(itemToBeSelcted);
+	}
+	</text>
+	}
+	else if(fieldName.Contains("MultiSelect"))
+	{
+	var escapeSymbol = @Raw("<Integer>");
+	
+	var method = "select"+@FirstLetterUppercase(fieldName)+"(WebDriver d, List";
+	var param =" itemsToBeSelected)";
+	var methodName = "select"+@FirstLetterUppercase(fieldName);
+	var selectByValue = @fieldName+".selectByValue(itemToBeSelcted)";
+	<text>
+	public void @method@escapeSymbol@param {
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Selecting list items..." + itemsToBeSelected);
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Multi Select List", FW_Const.SIXTY);
+		Select multiSelectList = new Select(@fieldName);
+		Actions selectOptions = new Actions();
+		for (Integer item : itemsToBeSelected) {
+			selectOptions.click(multiSelectList.getOptions().get(item));
+			selectOptions.keyDown(Keys.CONTROL);
+		}
+		selectOptions.keyUp(Keys.CONTROL);
+		selectOptions.build().perform();
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Label"))
+	{
+	var method = "get"+@FirstLetterUppercase(fieldName)+"()";
+	var methodName = "get"+@FirstLetterUppercase(fieldName);
+	var parsedTextVar = @fieldName+".getText().replaceAll";
+	var trim = ".trim()";
+	<text>
+	public String @method {
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Getting @element.Name.");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@FirstLetterUppercase(@element.Name) Label", FW_Const.SIXTY);
+		String parsedText = @parsedTextVar@Raw("(\"(?:\\n|\\r)\", \"\")")@trim;
+		return parsedText;
+	}
+	</text>
+	}
+	else if(fieldName.Contains("Text"))
+	{
+	var method = "get"+@FirstLetterUppercase(fieldName)+"()";
+	var methodName = "get"+@FirstLetterUppercase(fieldName);
+	
+	var parsedTextVar = @fieldName+".getText().replaceAll";
+	var trim = ".trim()";
+	<text>
+	public String @method {
+		logger.info("[@Model.PageObject.PageObjectName : @methodName] Getting @FirstLetterUppercase(@element.Name).");
+		fw_WebDriverFunctions.waitForElementToAppear(By.xpath(LOCATOR_@element.Name.ToUpper()), "@element.Name", FW_Const.SIXTY);
+		String parsedText = @parsedTextVar@Raw("(\"(?:\\n|\\r)\", \"\")")@trim;
+		return parsedText;
+	}
+	</text>
+	}
+	}
+}

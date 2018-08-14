@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="1" name="CNHi_TestSuite" parallel="none">
+	<test name="CNHiFleetAPPLoginTest_WINDOWS_WEB_CHROME_66">
+		<parameter name="appType" value="WEB" />
+		<parameter name="browser" value="CHROME" />
+		<parameter name="browserVersion" value="66.0.3359.181" />
+		<parameter name="platform" value="WINDOWS" />
+		<classes>
+			<class name="com.test.CNHi.testSuite.TestPlan">
+				<methods>
+<!-- 					<include name="EVOFleetHomeScreenTest" />
+ -->					<include name="CNHiFleetWebAPPLoginTest" />
+
+					<!-- <include name="CNHiFarmAPPFieldTestUserA" />
+					<include name="CNHiFarmAPPFieldTestUserB" /> -->
+
+					<!-- <include name="CNHiRestAssured_GETTest" /> -->
+				</methods>
+			</class> <!-- com.test.CNHi.testSuite.TestPlan -->
+		</classes>
+	</test> <!-- CNHiFleetAPPLoginTest_WINDOWS_WEB_CHROME_66 -->
+</suite> <!-- CNHi_TestSuite -->
