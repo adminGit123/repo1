@@ -1,8 +1,0 @@
-api,contentType,statusCode,response
-/mkt/fmis/companies/94eea3c3-6831-490f-a07b-ba31b098c61f/growers,JSON,200,"{
-    ""Code"": -2147467259,
-    ""Message"": ""42703: column Company.Status does not exist"",
-    ""Target"": ""/api/companies/94eea3c3-6831-490f-a07b-ba31b098c61f/growers"",
-    ""Details"": null,
-    ""InnerError"": null
-}"
